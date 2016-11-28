@@ -1,6 +1,6 @@
-
+#########
 shellsnmp
-=========
+#########
 
 *Shamelessly (ab)using NET-SNMP shell commands for a quick-and-dirty Python SNMP lib*
 
