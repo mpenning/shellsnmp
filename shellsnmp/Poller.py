@@ -23,11 +23,12 @@ class SNMP(object):
         """Parse the output of bulkwalk()"""
         retval = dict()
         for line in text.splitlines():
-            mm = re.search('^(?P<index>\S+)\s+(?P<type>=\s+STRING:\s+)*"*(?P<value>\S.+?)"*$', line)
+            line.strip()
+            mm = re.search(r'^(?P<index>\S+)\s+(?P<type>=\s+(INTEGER|STRING):\s+\")*(?P<value>\S.+?)\"*$', line.strip())
             assert mm is not None, "Could not parse: '{0}'".format(line)
             tmp = mm.groupdict()
             index, value = tmp.get('index'), tmp.get('value')
-            retval[self._cast(index.split('.')[-1])] = self._cast(value)
+            retval[self._cast(index)] = self._cast(value)
         return retval
 
     def pivot_table(self, vals1, vals2):
