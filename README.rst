@@ -16,7 +16,7 @@ Usage
 
 Be sure you have MIB files loaded on your system. You can download them from
 Cisco's FTP site like this... 
-``wget ftp://ftp.cisco.com/pub/mibs/v2/MIB-NAME.my`` ::
+`wget ftp://ftp.cisco.com/pub/mibs/v2/MIB-NAME.my` ::
 
     from shellsnmp.Poller import SNMP
 
@@ -24,7 +24,7 @@ Cisco's FTP site like this...
     status, time = snmp.bulkwalk(mibfile='/path/to/IF-MIB.my', 
         oidspec='ifOperStatus')
 
-Note that only ``bulkwalk()`` has been implemented at this time.
+Note that only `bulkwalk()` has been implemented at this time.
 
 Installation
 ------------
