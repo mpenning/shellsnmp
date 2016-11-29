@@ -14,8 +14,8 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='shellsnmp',
-      version='0.1.5',
-      description='Python snmp using shell calls',
+      version='0.1.6',
+      description='',
       url='http://github.com/mpenning/shellsnmp/',
       author='David Michael Pennington',
       author_email='mike@pennington.net',
