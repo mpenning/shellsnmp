@@ -24,14 +24,29 @@ class SNMP(object):
         retval = dict()
         for line in text.splitlines():
             line.strip()
-            if options=='Oxsq':
-                mm = re.search(r'^\S+?\.(?P<index>\d+)\s+(?P<type>=\s+(INTEGER|STRING):\s+\")*(?P<value>\S.+?)\"*$', line.strip())
-            elif options=='sq':
-                # RFC1213-MIB::ifDescr.10101 = STRING: "GigabitEthernet0/1"
-                mm = re.search(r'^\S+?\.(?P<index>\d+)\s+=\s+(INTEGER|STRING):\s+\"*(?P<value>\S.+?)\"*$', line.strip())
+            try:
+                ## --> Parse assuming the line has a non-empty value
+                if options=='Oxsq':
+                    mm = re.search(r'^\S+?\.(?P<index>\d+)\s+(?P<value>\S.+)$', line.strip())
+                elif options=='sq':
+                    # RFC1213-MIB::ifDescr.10101 = STRING: "GigabitEthernet0/1"
+                    mm = re.search(r'^\S+?\.(?P<index>\d+)\s+=\s+(INTEGER|STRING):\s+\"*(?P<value>\S.+?)\"*$', line.strip())
+                assert mm is not None, "Could not parse: '{0}'".format(line)
+
+            except AssertionError:
+                ## --> Parse assuming the line has an empty value
+                if options=='Oxsq':
+                    mm = re.search(r'^\S+?\.(?P<index>\d+)', line.strip())
+                elif options=='sq':
+                    # RFC1213-MIB::ifDescr.10101 = STRING: "GigabitEthernet0/1"
+                    mm = re.search(r'^\S+?\.(?P<index>\d+)\s+=\s+(STRING):\s*\"*\"*$', line.strip())
+
             assert mm is not None, "Could not parse: '{0}'".format(line)
             tmp = mm.groupdict()
-            index, value = tmp.get('index'), tmp.get('value')
+            index, value = tmp.get('index'), tmp.get('value', '')
+            # Special case for double quoted empty string...
+            if value == '""':
+                value = ''
             retval[self._cast(index)] = self._cast(value)
         return retval
 
