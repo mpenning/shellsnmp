@@ -19,14 +19,24 @@ class SNMP(object):
         else:
             return str(text)
 
-    def _parse(self, text):
+    def _parse(self, text, options='', debug=False):
         """Parse the output of bulkwalk()"""
         retval = dict()
         for line in text.splitlines():
             line.strip()
-            mm = re.search(r'^(?P<index>\S+)\s+(?P<type>=\s+(INTEGER|STRING):\s+\")*(?P<value>\S.+?)\"*$', line.strip())
+            if options=='Oxsq':
+                if debug:
+                    print "Parsing: '{0}'".format(line.strip())
+                mm = re.search(r'^(?P<index>\S+)\s+(?P<type>=\s+(INTEGER|STRING):\s+\")*(?P<value>\S.+?)\"*$', line.strip())
+            elif options=='sq':
+                if debug:
+                    print "Parsing: '{0}'".format(line.strip())
+                # RFC1213-MIB::ifDescr.10101 = STRING: "GigabitEthernet0/1"
+                mm = re.search(r'^(?P<index>\S+)\s+=\s+(INTEGER|STRING):\s+\"(?P<value>\S.+?)\"$', line.strip())
             assert mm is not None, "Could not parse: '{0}'".format(line)
             tmp = mm.groupdict()
+            if debug:
+                print "Parsed: {0}".format(tmp)
             index, value = tmp.get('index'), tmp.get('value')
             retval[self._cast(index)] = self._cast(value)
         return retval
@@ -46,11 +56,13 @@ class SNMP(object):
             # ifDescr.10101 GigabitEthernet0/1
             cmd = 'snmpbulkwalk -v 2c -m {0} -c {1} -Oxsq {2} {3}'.format(
                 mibfile, self.community, self.host, oidspec)
+            proc = Popen(cmd, shell=True, stdout=PIPE)
+            return self._parse(proc.stdout.read(), options='Oxsq'), arrow.now()
+
         else:
             # RFC1213-MIB::ifDescr.10101 = STRING: "GigabitEthernet0/1"
             cmd = 'snmpbulkwalk -v 2c -c {0} -sq {1} {2}'.format(
                 self.community, self.host, oidspec)
-
-        proc = Popen(cmd, shell=True, stdout=PIPE)
-        return self._parse(proc.stdout.read()), arrow.now()
+            proc = Popen(cmd, shell=True, stdout=PIPE)
+            return self._parse(proc.stdout.read(), options='sq'), arrow.now()
 
