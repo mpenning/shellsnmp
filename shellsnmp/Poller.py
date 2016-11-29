@@ -19,24 +19,18 @@ class SNMP(object):
         else:
             return str(text)
 
-    def _parse(self, text, options='', debug=False):
+    def _parse(self, text, options=''):
         """Parse the output of bulkwalk()"""
         retval = dict()
         for line in text.splitlines():
             line.strip()
             if options=='Oxsq':
-                if debug:
-                    print "Parsing: '{0}'".format(line.strip())
-                mm = re.search(r'^(?P<index>\S+)\s+(?P<type>=\s+(INTEGER|STRING):\s+\")*(?P<value>\S.+?)\"*$', line.strip())
+                mm = re.search(r'^\S+?\.(?P<index>\d+)\s+(?P<type>=\s+(INTEGER|STRING):\s+\")*(?P<value>\S.+?)\"*$', line.strip())
             elif options=='sq':
-                if debug:
-                    print "Parsing: '{0}'".format(line.strip())
                 # RFC1213-MIB::ifDescr.10101 = STRING: "GigabitEthernet0/1"
-                mm = re.search(r'^(?P<index>\S+)\s+=\s+(INTEGER|STRING):\s+\"(?P<value>\S.+?)\"$', line.strip())
+                mm = re.search(r'^\S+?\.(?P<index>\d+)\s+=\s+(INTEGER|STRING):\s+\"*(?P<value>\S.+?)\"*$', line.strip())
             assert mm is not None, "Could not parse: '{0}'".format(line)
             tmp = mm.groupdict()
-            if debug:
-                print "Parsed: {0}".format(tmp)
             index, value = tmp.get('index'), tmp.get('value')
             retval[self._cast(index)] = self._cast(value)
         return retval
